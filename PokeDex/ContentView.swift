@@ -15,29 +15,84 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
         animation: .default)
     private var pokedex: FetchedResults<Pokemon>
+    
+    let fetcher = FetchService()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(pokedex) { pokemon in
-                    NavigationLink {
-                        Text(pokemon.name ?? "no name")
-                    } label: {
-                        Text(pokemon.name ?? "no name")
+                    NavigationLink(value: pokemon) {
+                        AsyncImage(url: pokemon.sprite) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 100, height: 100)
+                        
+                        VStack(alignment: .leading) {
+                            Text(pokemon.name!.capitalized)
+                                .fontWeight(.bold)
+                            
+                            HStack {
+                                ForEach(pokemon.types, id: \.self) { type in
+                                    Text(type.capitalised)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.black)
+                                        .padding(.horizontal, 13)
+                                        .padding(.vertical, 5)
+                                        .background(Color(type.capitalized))
+                                }
+                            }
+                        }
                     }
                 }
             }
+            .navigationTitle("Pokedex")
+            .navigationDestination(for: Pokemon.self, destination: { pokemon in
+                Text(pokemon.name ?? "no name")
+            })
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
                 ToolbarItem {
-                    Button("Add Item", systemImage: "plus") {}
+                    Button("Add Item", systemImage: "plus") {
+                        getPokemon()
+                    }
                 }
             }
         }
     }
 
+    private func getPokemon() {
+        Task {
+            for id in 1..<152 {
+                do {
+                    let fetchedPokemon = try await fetcher.fetchPokemon(id)
+                    let pokemon = Pokemon(context: viewContext)
+                    pokemon.id = fetchedPokemon.id
+                    pokemon.name = fetchedPokemon.name
+                    pokemon.types = fetchedPokemon.types
+                    pokemon.hp = fetchedPokemon.hp
+                    pokemon.attack = fetchedPokemon.attack
+                    pokemon.defense = fetchedPokemon.defense
+                    pokemon.specialAttack = fetchedPokemon.specialAttack
+                    pokemon.specialDefence = fetchedPokemon.specialDefense
+                    pokemon.speed = fetchedPokemon.speed
+                    pokemon.sprite = fetchedPokemon.sprite
+                    pokemon.shiny = fetchedPokemon.shiny
+                    
+                    try viewContext.save()
+                } catch {
+                    print(error)
+                }
+            }
+        }
+    }
 }
 
 #Preview {
