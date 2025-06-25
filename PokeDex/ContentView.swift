@@ -37,14 +37,18 @@ struct ContentView: View {
                                 .fontWeight(.bold)
                             
                             HStack {
-                                ForEach(pokemon.types, id: \.self) { type in
-                                    Text(type.capitalised)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.black)
-                                        .padding(.horizontal, 13)
-                                        .padding(.vertical, 5)
-                                        .background(Color(type.capitalized))
+                                if let types = pokemon.types {
+                                    ForEach(types, id: \.self) { type in
+                                        let capitalizedType = type.capitalized
+                                        Text(capitalizedType)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.black)
+                                            .padding(.horizontal, 13)
+                                            .padding(.vertical, 5)
+                                            .background(Color(capitalizedType))
+                                            .clipShape(Capsule())
+                                    }
                                 }
                             }
                         }
