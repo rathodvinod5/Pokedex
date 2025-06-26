@@ -21,15 +21,24 @@ struct PokemonDetail: View {
                     .scaledToFit()
                     .shadow(color: .black, radius: 6)
                 
-                AsyncImage(url: pokemon.sprite) { image in
-                    image
+                if pokemon.sprite == nil || pokemon.shiny == nil {
+                    AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
+                        image
+                            .interpolation(.none)
+                            .resizable()
+                            .scaledToFit()
+                            .padding(.top, 50)
+                            .shadow(color: .black, radius: 6)
+                    } placeholder: {
+                        ProgressView()
+                    }
+                } else {
+                    (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
                         .interpolation(.none)
                         .resizable()
                         .scaledToFit()
                         .padding(.top, 50)
                         .shadow(color: .black, radius: 6)
-                } placeholder: {
-                    ProgressView()
                 }
             }
             
@@ -74,6 +83,17 @@ struct PokemonDetail: View {
             Stats(pokemon: pokemon)
         }
         .navigationTitle(pokemon.name!.capitalized)
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showShiny.toggle()
+                } label: {
+                    Image(systemName: showShiny ? "wand.and.stars" : "wand.and.stars.invert")
+                        .foregroundStyle(showShiny ? .yellow : .primary)
+                }
+
+            }
+        }
     }
 }
 
