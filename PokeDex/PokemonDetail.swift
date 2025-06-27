@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct PokemonDetail: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @EnvironmentObject private var pokemon: Pokemon
+    @Environment(\.modelContext) private var modelContext
+    var pokemon: Pokemon
     
     @State private var showShiny: Bool = false
     
@@ -42,39 +42,37 @@ struct PokemonDetail: View {
                 }
             }
             
-            if let types = pokemon.types {
-                HStack {
-                    ForEach(types, id: \.self) { type in
-                        let capitalizedType = type.capitalized
-                        Text(capitalizedType)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.black)
-                            .shadow(color: .white, radius: 1)
-                            .padding(.vertical, 7)
-                            .padding(.horizontal)
-                            .background(Color(type.capitalized))
-                            .clipShape(Capsule())
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        pokemon.favorite.toggle()
-                        
-                        do {
-                            try viewContext.save()
-                        } catch {
-                            print(error)
-                        }
-                    } label: {
-                        Image(systemName: pokemon.favorite ? "star.fill" : "star")
-                            .font(.largeTitle)
-                            .tint(.yellow)
-                    }
+            HStack {
+                ForEach(pokemon.types, id: \.self) { type in
+                    let capitalizedType = type.capitalized
+                    Text(capitalizedType)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.black)
+                        .shadow(color: .white, radius: 1)
+                        .padding(.vertical, 7)
+                        .padding(.horizontal)
+                        .background(Color(type.capitalized))
+                        .clipShape(Capsule())
                 }
-                .padding()
+                
+                Spacer()
+                
+                Button {
+                    pokemon.favorite.toggle()
+                    
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print(error)
+                    }
+                } label: {
+                    Image(systemName: pokemon.favorite ? "star.fill" : "star")
+                        .font(.largeTitle)
+                        .tint(.yellow)
+                }
             }
+            .padding()
             
             Text("Stats")
                 .font(.title)
@@ -82,7 +80,7 @@ struct PokemonDetail: View {
             
             Stats(pokemon: pokemon)
         }
-        .navigationTitle(pokemon.name!.capitalized)
+        .navigationTitle(pokemon.name.capitalized)
         .toolbar {
             ToolbarItem {
                 Button {
@@ -99,7 +97,6 @@ struct PokemonDetail: View {
 
 #Preview {
     NavigationStack {
-        PokemonDetail()
-            .environmentObject(PersistenceController.previewPokemon)
+        PokemonDetail(pokemon: PersistenceController.previewPokemon)
     }
 }
