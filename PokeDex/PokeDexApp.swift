@@ -6,15 +6,26 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct PokeDexApp: App {
-    let persistenceController = PersistenceController.shared
+    let sharedModelContainer: ModelContainer = {
+        let schema = Schema([Pokemon.self])
+        
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        do {
+            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+        } catch {
+            fatalError("Could not create model Container: \(error)")
+        }
+    }()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .modelContainer(sharedModelContainer)
         }
     }
 }
